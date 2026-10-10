@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gemini Cookies Exporter</title>
+<style>
+  body { font-family: system-ui, sans-serif; width: 360px; margin: 0; padding: 14px; color: #1f1f1f; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  p { font-size: 12px; color: #555; margin: 0 0 10px; }
+  label { font-size: 12px; display: block; margin: 8px 0 4px; }
+  input, select { width: 100%; box-sizing: border-box; font-size: 12px; padding: 6px; }
+  textarea { width: 100%; box-sizing: border-box; height: 120px; font-size: 11px; font-family: monospace; }
+  .row { display: flex; gap: 8px; margin-top: 10px; }
+  button { flex: 1; padding: 8px; font-size: 13px; cursor: pointer; }
+  #status { font-size: 12px; margin-top: 8px; min-height: 18px; }
+  .ok { color: #0a7d2c; }
+  .err { color: #b3261e; }
+</style>
+</head>
+<body>
+  <h1>Gemini Cookies Exporter</h1>
+  <p>Open <b>gemini.google.com</b> in this tab, signed into the account you want. The extension reads that tab's cookies directly.</p>
+  <label for="name">Account name (acc1, acc2, ...)</label>
+  <input id="name" value="acc1" />
+  <label for="auth">Account slot /u/&lt;number&gt;/ (empty when URL has no /u/N/)</label>
+  <input id="auth" placeholder="e.g. 2" />
+  <label for="out">Cookie header (paste into cookies/&lt;name&gt;.txt)</label>
+  <textarea id="out" readonly placeholder="Click Read cookies..."></textarea>
+  <div class="row">
+    <button id="read">Read cookies</button>
+    <button id="copy">Copy</button>
+  </div>
+  <div class="row">
+    <button id="download">Save .txt</button>
+    <button id="send">Send to server</button>
+  </div>
+  <label for="server">Server admin URL (optional, for Send)</label>
+  <input id="server" placeholder="http://localhost:4981" />
+  <div id="status"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

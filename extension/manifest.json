@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Gemini Cookies Exporter",
+  "version": "1.1.0",
+  "description": "Copy the complete Gemini Web Cookie header (all accounts) for gemini-web-to-api multi-account mode.",
+  "permissions": ["cookies", "activeTab", "clipboardWrite", "storage"],
+  "host_permissions": ["https://gemini.google.com/*", "https://*.google.com/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Copy Gemini cookies"
+  },
+  "icons": {
+    "48": "icon48.png"
+  }
+}

@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini Web To API — Control Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            darkBg: '#0b0f19',
+            cardBg: '#131b2e',
+            cardBorder: '#1e293b'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0b0f19;
+      color: #f1f5f9;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    .glass-card {
+      background: rgba(19, 27, 46, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1rem;
+    }
+    .pulse-glow {
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.35);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #111827;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #374151;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #4b5563;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+  <!-- TOP NAVBAR -->
+  <header class="sticky top-0 z-40 bg-darkBg/90 backdrop-blur-md border-b border-cardBorder">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo & Title -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg pulse-glow">
+            <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-bold text-lg tracking-tight text-white">Gemini Web To API</span>
+              <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">v1.0.0</span>
+            </div>
+            <p class="text-xs text-slate-400">Management & Cookie Monitoring Console</p>
+          </div>
+        </div>
+
+        <!-- Quick Status & Controls -->
+        <div class="flex items-center space-x-2 sm:space-x-4">
+          <!-- Server Status Badge -->
+          <div id="statusBadge" class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs font-medium text-slate-300">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" id="statusDot"></span>
+            <span id="statusText">Connecting...</span>
+          </div>
+
+          <!-- Latency Badge -->
+          <div id="latencyBadge" class="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs font-mono text-slate-400">
+            <i class="fa-solid fa-bolt text-amber-400 text-[11px]"></i>
+            <span id="latencyText">-- ms</span>
+          </div>
+
+          <!-- Auto-Refresh Selector -->
+          <div class="flex items-center space-x-1 bg-slate-800/80 border border-slate-700/60 rounded-lg p-1 text-xs">
+            <i class="fa-solid fa-arrows-rotate text-slate-400 px-1 text-[11px]"></i>
+            <select id="autoRefreshSelect" class="bg-transparent text-slate-200 text-xs focus:outline-none cursor-pointer pr-1">
+              <option value="5000" class="bg-slate-900">5s</option>
+              <option value="10000" selected class="bg-slate-900">10s</option>
+              <option value="30000" class="bg-slate-900">30s</option>
+              <option value="0" class="bg-slate-900">Tắt</option>
+            </select>
+          </div>
+
+          <!-- Admin Token Button -->
+          <button onclick="openTokenModal()" title="Cài đặt Admin Token" class="px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-xs font-medium text-slate-300 transition flex items-center space-x-1.5">
+            <i class="fa-solid fa-key text-amber-400"></i>
+            <span class="hidden sm:inline" id="tokenBtnLabel">Token</span>
+          </button>
+
+          <!-- API Docs Link -->
+          <a href="/docs" target="_blank" class="px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-xs font-medium text-indigo-200 transition flex items-center space-x-1.5">
+            <i class="fa-solid fa-book"></i>
+            <span class="hidden sm:inline">Docs</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- STATS OVERVIEW CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      
+      <!-- Card 1: Server Status -->
+      <div class="glass-card p-5 relative overflow-hidden flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Trạng Thái Hệ Thống</span>
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <i class="fa-solid fa-heart-pulse"></i>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="flex items-baseline space-x-2">
+            <span id="statServerHealth" class="text-2xl font-bold tracking-tight text-emerald-400">Online</span>
+            <span class="text-xs text-slate-500 font-mono">Port 4981</span>
+          </div>
+          <p id="statRecovery" class="text-xs text-slate-400 mt-1">Fiber v3 & Go 1.24</p>
+        </div>
+        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
+      </div>
+
+      <!-- Card 2: Total Accounts -->
+      <div class="glass-card p-5 relative overflow-hidden flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Tài Khoản Gemini</span>
+          <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+            <i class="fa-solid fa-users-viewfinder"></i>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="flex items-baseline space-x-2">
+            <span id="statHealthyCount" class="text-2xl font-bold tracking-tight text-white">0</span>
+            <span class="text-xs text-slate-400">/ <span id="statTotalCount">0</span> Hoạt Động</span>
+          </div>
+          <p id="statDegradedMsg" class="text-xs text-emerald-400 mt-1">Tất cả tài khoản sẵn sàng</p>
+        </div>
+        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-indigo-500/5 rounded-full blur-xl pointer-events-none"></div>
+      </div>
+
+      <!-- Card 3: Ping AI Latency -->
+      <div class="glass-card p-5 relative overflow-hidden flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Độ Trễ Phản Hồi</span>
+          <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+            <i class="fa-solid fa-stopwatch"></i>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="flex items-baseline space-x-2">
+            <span id="statLatencyVal" class="text-2xl font-bold tracking-tight text-amber-400">--</span>
+            <span class="text-xs text-slate-400 font-mono">ms</span>
+          </div>
+          <p id="statLastCheck" class="text-xs text-slate-500 mt-1">Chưa đo</p>
+        </div>
+        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-amber-500/5 rounded-full blur-xl pointer-events-none"></div>
+      </div>
+
+      <!-- Card 4: API Endpoint -->
+      <div class="glass-card p-5 relative overflow-hidden flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium uppercase tracking-wider text-slate-400">OpenAI API Endpoint</span>
+          <button onclick="copyToClipboard(window.location.origin + '/openai/v1')" class="text-xs text-indigo-400 hover:text-indigo-300">
+            <i class="fa-regular fa-copy"></i>
+          </button>
+        </div>
+        <div class="mt-4">
+          <div class="text-sm font-mono text-indigo-300 truncate bg-slate-900/60 p-2 rounded border border-slate-800">
+            /openai/v1/chat/completions
+          </div>
+          <p class="text-xs text-slate-400 mt-2 flex items-center space-x-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+            <span>Tương thích OpenAI SDK / LangChain / Curl</span>
+          </p>
+        </div>
+        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-purple-500/5 rounded-full blur-xl pointer-events-none"></div>
+      </div>
+    </div>
+
+    <!-- ACTION CONTROLS & TOOLBAR -->
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div class="flex items-center space-x-2">
+        <h2 class="text-xl font-bold tracking-tight text-white flex items-center space-x-2">
+          <span>Danh Sách Tài Khoản</span>
+        </h2>
+        <span id="accountCountBadge" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">0</span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Hot Reload Disk -->
+        <button onclick="triggerHotReload()" id="btnReload" class="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-xs font-semibold text-slate-200 transition flex items-center justify-center space-x-2 shadow-sm">
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span>Quét Lại Thư Mục Cookie</span>
+        </button>
+
+        <!-- Test AI Ping -->
+        <button onclick="triggerTestPing()" id="btnPing" class="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 text-xs font-semibold text-amber-300 transition flex items-center justify-center space-x-2 shadow-sm">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Kiểm Tra Ping AI</span>
+        </button>
+
+        <!-- Add Cookie Button -->
+        <button onclick="openAddAccountModal()" class="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 border border-indigo-400 text-xs font-semibold text-white transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-500/20">
+          <i class="fa-solid fa-plus"></i>
+          <span>Thêm / Cập Nhật Cookie</span>
+        </button>
+
+        <!-- Manual Refresh -->
+        <button onclick="fetchStatus(true)" title="Làm mới bảng" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ACCOUNTS TABLE -->
+    <div class="glass-card overflow-hidden">
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-sm text-slate-300">
+          <thead class="bg-slate-900/70 text-xs uppercase tracking-wider text-slate-400 border-b border-cardBorder">
+            <tr>
+              <th scope="col" class="px-6 py-4 font-semibold">Tên Tài Khoản</th>
+              <th scope="col" class="px-6 py-4 font-semibold">Trạng Thái</th>
+              <th scope="col" class="px-6 py-4 font-semibold">Cookie Mask (PSID)</th>
+              <th scope="col" class="px-6 py-4 font-semibold">Models Hỗ Trợ</th>
+              <th scope="col" class="px-6 py-4 font-semibold text-right">Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody id="accountsTableBody" class="divide-y divide-cardBorder font-normal">
+            <!-- Dynamic rows will be injected here -->
+            <tr>
+              <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                <i class="fa-solid fa-spinner fa-spin text-2xl mb-3 text-indigo-400"></i>
+                <p>Đang tải danh sách tài khoản...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE AI PLAYGROUND / CONSOLE -->
+    <div class="glass-card p-6 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-cardBorder">
+        <div>
+          <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+            <i class="fa-solid fa-terminal text-indigo-400"></i>
+            <span>Trực Quan Thử Nghiệm Gemini API (AI Playground)</span>
+          </h3>
+          <p class="text-xs text-slate-400">Gửi trực tiếp câu hỏi qua pool tài khoản Gemini hiện tại để xác minh hoạt động.</p>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <label for="playgroundModel" class="text-xs text-slate-400">Model:</label>
+          <select id="playgroundModel" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500">
+            <option value="gemini-2.5-flash">gemini-2.5-flash (Nhanh nhất)</option>
+            <option value="gemini-2.5-pro">gemini-2.5-pro (Mạnh nhất)</option>
+            <option value="gemini-2.0-flash-thinking">gemini-2.0-flash-thinking (Tư duy)</option>
+            <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+            <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Input box & Quick chips -->
+      <div class="space-y-3">
+        <div class="flex flex-wrap gap-2 text-xs">
+          <span class="text-slate-500 self-center">Gợi ý nhanh:</span>
+          <button onclick="setPrompt('Ping test! Trả lời ngắn gọn 1 câu chào hỏi.')" class="px-2.5 py-1 rounded bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300">👋 Chào hỏi</button>
+          <button onclick="setPrompt('Giải một câu trắc nghiệm Toán: Cho hàm số y = x^3 - 3x. Tìm toạ độ cực tiểu.')" class="px-2.5 py-1 rounded bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300">📐 Toán ôn luyện</button>
+          <button onclick="setPrompt('Viết một đoạn code Python tính số Fibonacci đệ quy có memoization.')" class="px-2.5 py-1 rounded bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300">🐍 Python Code</button>
+        </div>
+
+        <div class="relative">
+          <textarea id="playgroundPrompt" rows="3" placeholder="Nhập câu hỏi hoặc prompt thử nghiệm tại đây (Ctrl + Enter để gửi)..." class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl p-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 custom-scrollbar"></textarea>
+          <button onclick="sendPlaygroundPrompt()" id="btnSendPrompt" class="absolute right-3 bottom-3 px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition flex items-center space-x-1.5 shadow-md">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>Gửi Prompt</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Response Area -->
+      <div id="playgroundResultArea" class="hidden space-y-2 mt-4 pt-4 border-t border-cardBorder">
+        <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-2">
+            <span class="font-semibold text-slate-300">Kết quả phản hồi từ Gemini:</span>
+            <span id="playgroundLatencyBadge" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono text-[11px]">-- ms</span>
+            <span id="playgroundModelBadge" class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono text-[11px]">--</span>
+          </div>
+          <button onclick="copyToClipboard(document.getElementById('playgroundResponseText').innerText)" class="text-slate-400 hover:text-slate-200">
+            <i class="fa-regular fa-copy mr-1"></i>Sao chép
+          </button>
+        </div>
+        <div id="playgroundResponseBox" class="bg-slate-900/95 border border-slate-800 rounded-xl p-4 text-sm text-slate-200 whitespace-pre-wrap font-sans max-h-96 overflow-y-auto custom-scrollbar">
+          <span id="playgroundResponseText"></span>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-cardBorder bg-darkBg/90 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>Gemini Web To API Server & Dashboard</span>
+      </div>
+      <div>
+        <span>Tự động giám sát cookie & Hot Reload khi tệp tin thay đổi.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL: ADD / UPDATE COOKIE -->
+  <div id="addAccountModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-cardBg border border-slate-700/80 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-cardBorder flex items-center justify-between bg-slate-900/60">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+            <i class="fa-solid fa-cookie-bite"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-base" id="modalTitle">Thêm / Cập Nhật Tài Khoản Cookie</h3>
+            <p class="text-xs text-slate-400">Nhập Cookie chuỗi raw từ DevTools của gemini.google.com</p>
+          </div>
+        </div>
+        <button onclick="closeAddAccountModal()" class="text-slate-400 hover:text-white p-2">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1">
+        
+        <!-- Account Name & AuthUser -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Tên tài khoản (ID):</label>
+            <input type="text" id="inputAccName" placeholder="vd: acc1, acc2, gemini_pro" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+            <p class="text-[11px] text-slate-500 mt-1">Đặt tên ngắn gọn để phân biệt các tài khoản trong pool.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">AuthUser (tuỳ chọn):</label>
+            <input type="text" id="inputAuthUser" value="0" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+            <p class="text-[11px] text-slate-500 mt-1">Mặc định là 0.</p>
+          </div>
+        </div>
+
+        <!-- File Upload Helper -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Tải file Cookie (.txt hoặc .json):</label>
+          <div class="flex items-center space-x-3">
+            <label class="cursor-pointer px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-300 transition flex items-center space-x-2">
+              <i class="fa-solid fa-file-arrow-up text-indigo-400"></i>
+              <span>Chọn file từ máy</span>
+              <input type="file" id="cookieFileInput" accept=".txt,.json" class="hidden" onchange="handleCookieFileUpload(event)">
+            </label>
+            <span id="cookieFileName" class="text-xs text-slate-400 truncate">Chưa chọn file nào</span>
+          </div>
+        </div>
+
+        <!-- Cookie Textarea -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-semibold text-slate-300">Nội dung Cookie Header (Bắt buộc):</label>
+            <button type="button" onclick="pasteFromClipboard('inputCookies')" class="text-[11px] text-indigo-400 hover:text-indigo-300">
+              <i class="fa-regular fa-clipboard mr-1"></i>Dán từ bộ nhớ tạm
+            </button>
+          </div>
+          <textarea id="inputCookies" rows="6" placeholder="Dán toàn bộ chuỗi Cookie từ request header: __Secure-1PSID=...; __Secure-1PSIDTS=...; hoặc toàn bộ chuỗi Cookie..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 custom-scrollbar"></textarea>
+          <p class="text-[11px] text-slate-500 mt-1">Yêu cầu tối thiểu phải chứa <code class="text-amber-400">__Secure-1PSID</code> (hoặc đầy đủ chuỗi cookie từ batchexecute).</p>
+        </div>
+
+        <!-- Replace Checkbox -->
+        <div class="flex items-center space-x-2">
+          <input type="checkbox" id="inputReplace" checked class="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700 focus:ring-0">
+          <label for="inputReplace" class="text-xs text-slate-300 cursor-pointer">Ghi đè/xoay vòng nếu tên tài khoản đã tồn tại</label>
+        </div>
+
+        <!-- Quick Help Box -->
+        <div class="bg-indigo-950/40 border border-indigo-900/60 rounded-xl p-3 text-xs text-indigo-200/90 space-y-1">
+          <div class="font-semibold flex items-center space-x-1.5 text-indigo-300">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Cách lấy Cookie cực nhanh từ Trình duyệt:</span>
+          </div>
+          <ol class="list-decimal list-inside space-y-0.5 text-indigo-200/80 text-[11px] pl-1">
+            <li>Mở <code>gemini.google.com</code> trên Chrome/Edge và đăng nhập.</li>
+            <li>Bấm <b>F12</b> &rarr; chuyển sang tab <b>Network</b>.</li>
+            <li>Gửi bất kỳ câu hỏi nào trên Gemini, lọc từ khoá <code>batchexecute</code>.</li>
+            <li>Bấm vào request <code>batchexecute</code> &rarr; Headers &rarr; sao chép toàn bộ giá trị tại <code>Cookie:</code> rồi dán vào đây.</li>
+          </ol>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 border-t border-cardBorder flex items-center justify-end space-x-3 bg-slate-900/60">
+        <button onclick="closeAddAccountModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 transition">Hủy</button>
+        <button onclick="submitAccountForm()" id="btnSubmitAccount" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition flex items-center space-x-1.5 shadow-lg shadow-indigo-500/20">
+          <i class="fa-solid fa-check"></i>
+          <span>Lưu & Khởi Tạo Tài Khoản</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN TOKEN -->
+  <div id="tokenModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-cardBg border border-slate-700/80 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+      <div class="px-6 py-4 border-b border-cardBorder flex items-center justify-between bg-slate-900/60">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-shield-halved text-amber-400"></i>
+          <h3 class="font-bold text-white text-base">Cấu Hình Admin Token</h3>
+        </div>
+        <button onclick="closeTokenModal()" class="text-slate-400 hover:text-white p-2">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <p class="text-xs text-slate-400">Nếu server chạy có cờ <code>ADMIN_TOKEN</code>, hãy nhập token vào đây để dashboard có thể quản lý, reload và thêm tài khoản.</p>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Admin Token:</label>
+          <input type="password" id="inputAdminToken" placeholder="Nhập token quản trị viên..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-cardBorder flex items-center justify-end space-x-2 bg-slate-900/60">
+        <button onclick="clearAdminToken()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-rose-400">Xóa Token</button>
+        <button onclick="saveAdminToken()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white">Lưu Lại</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 space-y-2 pointer-events-none max-w-sm w-full"></div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    let refreshTimer = null;
+    let cachedAccounts = [];
+
+    // Helper: Headers with Admin Token
+    function getHeaders(extra = {}) {
+      const headers = {
+        'Accept': 'application/json',
+        ...extra
+      };
+      const token = localStorage.getItem('gemini_admin_token');
+      if (token) {
+        headers['X-Admin-Token'] = token;
+        headers['Authorization'] = 'Bearer ' + token;
+      }
+      return headers;
+    }
+
+    // Toast notifications
+    function showToast(message, type = 'info', duration = 3500) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'pointer-events-auto transform transition-all duration-300 ease-out translate-y-2 opacity-0 p-4 rounded-xl shadow-xl flex items-center space-x-3 text-xs font-medium border ';
+      
+      let icon = 'fa-circle-info text-blue-400';
+      if (type === 'success') {
+        toast.className += 'bg-slate-900 border-emerald-500/40 text-emerald-200';
+        icon = 'fa-circle-check text-emerald-400';
+      } else if (type === 'error') {
+        toast.className += 'bg-slate-900 border-rose-500/40 text-rose-200';
+        icon = 'fa-circle-exclamation text-rose-400';
+      } else if (type === 'warn') {
+        toast.className += 'bg-slate-900 border-amber-500/40 text-amber-200';
+        icon = 'fa-triangle-exclamation text-amber-400';
+      } else {
+        toast.className += 'bg-slate-900 border-indigo-500/40 text-indigo-200';
+      }
+
+      toast.innerHTML = `<i class="fa-solid ${icon} text-base flex-shrink-0"></i><span class="flex-1">${message}</span>`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+
+    // Fetch Health and Accounts
+    async function fetchStatus(isManual = false) {
+      const start = performance.now();
+      try {
+        const resp = await fetch('/health', { headers: getHeaders() });
+        const latency = Math.round(performance.now() - start);
+
+        if (!resp.ok && resp.status !== 503) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+
+        const data = await resp.json();
+        updateUI(data, latency);
+
+        if (isManual) {
+          showToast('Đã làm mới dữ liệu hệ thống', 'success', 2000);
+        }
+      } catch (err) {
+        console.error('Fetch error:', err);
+        setOfflineState(err.message);
+        if (isManual) {
+          showToast(`Lỗi kết nối server: ${err.message}`, 'error');
+        }
+      }
+    }
+
+    // Update Dashboard UI
+    function updateUI(healthData, latencyMs) {
+      // 1. Status Badges
+      const isOk = healthData.status === 'ok';
+      const statusBadge = document.getElementById('statusBadge');
+      const statusDot = document.getElementById('statusDot');
+      const statusText = document.getElementById('statusText');
+      const latencyBadge = document.getElementById('latencyBadge');
+      const latencyText = document.getElementById('latencyText');
+
+      statusBadge.classList.remove('hidden');
+      statusDot.className = `w-2.5 h-2.5 rounded-full ${isOk ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`;
+      statusText.innerText = isOk ? 'Trực Tuyến' : 'suy giảm (Degraded)';
+
+      latencyBadge.classList.remove('hidden');
+      latencyText.innerText = `${latencyMs} ms`;
+
+      // 2. Stat Cards
+      const statServerHealth = document.getElementById('statServerHealth');
+      statServerHealth.innerText = isOk ? 'Online' : 'Degraded';
+      statServerHealth.className = `text-2xl font-bold tracking-tight ${isOk ? 'text-emerald-400' : 'text-amber-400'}`;
+      
+      const statRecovery = document.getElementById('statRecovery');
+      statRecovery.innerText = healthData.recovery && healthData.recovery !== 'none' ? `Lưu ý: ${healthData.recovery}` : 'Hoạt động bình thường';
+
+      const statLatencyVal = document.getElementById('statLatencyVal');
+      statLatencyVal.innerText = latencyMs;
+      statLatencyVal.className = `text-2xl font-bold tracking-tight ${latencyMs < 300 ? 'text-emerald-400' : latencyMs < 800 ? 'text-amber-400' : 'text-rose-400'}`;
+      document.getElementById('statLastCheck').innerText = `Lần đo gần nhất: ${new Date().toLocaleTimeString()}`;
+
+      // 3. Accounts Stats & Table
+      const accounts = healthData.accounts || [];
+      cachedAccounts = accounts;
+      const total = healthData.total || accounts.length;
+      let healthyCount = 0;
+      accounts.forEach(acc => { if (acc.healthy) healthyCount++; });
+
+      document.getElementById('statHealthyCount').innerText = healthyCount;
+      document.getElementById('statTotalCount').innerText = total;
+      document.getElementById('accountCountBadge').innerText = total;
+
+      const statDegradedMsg = document.getElementById('statDegradedMsg');
+      if (total === 0) {
+        statDegradedMsg.innerText = 'Chưa có tài khoản nào';
+        statDegradedMsg.className = 'text-xs text-rose-400 mt-1';
+      } else if (healthyCount === total) {
+        statDegradedMsg.innerText = 'Tất cả tài khoản sẵn sàng';
+        statDegradedMsg.className = 'text-xs text-emerald-400 mt-1';
+      } else {
+        statDegradedMsg.innerText = `${total - healthyCount} tài khoản cần làm mới cookie`;
+        statDegradedMsg.className = 'text-xs text-amber-400 mt-1';
+      }
+
+      renderAccountsTable(accounts);
+    }
+
+    // Render Accounts Table
+    function renderAccountsTable(accounts) {
+      const tbody = document.getElementById('accountsTableBody');
+      if (!accounts || accounts.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+              <i class="fa-solid fa-folder-open text-3xl mb-3 text-slate-600 block"></i>
+              <p class="font-medium text-slate-400">Chưa có tài khoản nào được nạp</p>
+              <p class="text-xs text-slate-500 mt-1">Bấm <b>Thêm / Cập Nhật Cookie</b> hoặc đưa file cookie vào thư mục để nạp tự động.</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let html = '';
+      accounts.forEach(acc => {
+        const isHealthy = acc.healthy;
+        const models = acc.models || ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash-thinking'];
+        const modelBadges = models.slice(0, 3).map(m => `<span class="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-800 text-slate-300 border border-slate-700">${m}</span>`).join(' ');
+        const extraCount = models.length > 3 ? `<span class="text-xs text-slate-500">+${models.length - 3}</span>` : '';
+
+        html += `
+          <tr class="hover:bg-slate-800/40 transition">
+            <!-- Name -->
+            <td class="px-6 py-4 font-semibold text-white flex items-center space-x-2">
+              <div class="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xs">
+                <i class="fa-solid fa-user"></i>
+              </div>
+              <span class="font-mono text-sm">${escapeHtml(acc.name)}</span>
+            </td>
+
+            <!-- Status -->
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${isHealthy ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'}">
+                <span class="w-1.5 h-1.5 rounded-full ${isHealthy ? 'bg-emerald-400' : 'bg-rose-400 animate-pulse'}"></span>
+                <span>${isHealthy ? 'Hoạt động (Healthy)' : 'Hết hạn (Expired)'}</span>
+              </span>
+            </td>
+
+            <!-- PSID -->
+            <td class="px-6 py-4 font-mono text-xs text-slate-400">
+              <span class="bg-slate-900/80 px-2 py-1 rounded border border-slate-800">${escapeHtml(acc.psid || 'N/A')}</span>
+            </td>
+
+            <!-- Models -->
+            <td class="px-6 py-4">
+              <div class="flex flex-wrap items-center gap-1.5">
+                ${modelBadges} ${extraCount}
+              </div>
+            </td>
+
+            <!-- Actions -->
+            <td class="px-6 py-4 text-right">
+              <div class="flex items-center justify-end space-x-2">
+                <button onclick="testSpecificAccount('${escapeHtml(acc.name)}')" title="Kiểm tra phản hồi tài khoản này" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition flex items-center space-x-1">
+                  <i class="fa-solid fa-bolt text-amber-400"></i>
+                  <span class="hidden md:inline">Test</span>
+                </button>
+                <button onclick="openRotateAccount('${escapeHtml(acc.name)}')" title="Thay thế / Xoay vòng Cookie" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs transition flex items-center space-x-1">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                  <span class="hidden md:inline">Sửa</span>
+                </button>
+                <button onclick="deleteAccount('${escapeHtml(acc.name)}')" title="Xoá tài khoản khỏi hệ thống" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/30 text-rose-400 text-xs transition">
+                  <i class="fa-regular fa-trash-can"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    // Set offline state
+    function setOfflineState(errMsg) {
+      document.getElementById('statusDot').className = 'w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse';
+      document.getElementById('statusText').innerText = 'Mất kết nối';
+      document.getElementById('statServerHealth').innerText = 'Offline';
+      document.getElementById('statServerHealth').className = 'text-2xl font-bold tracking-tight text-rose-500';
+      document.getElementById('statRecovery').innerText = errMsg || 'Không thể liên lạc với server';
+      document.getElementById('latencyText').innerText = 'ERR';
+    }
+
+    // Hot Reload Disk Trigger
+    async function triggerHotReload() {
+      const btn = document.getElementById('btnReload');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Đang quét...</span>`;
+      
+      try {
+        const resp = await fetch('/admin/reload', {
+          method: 'POST',
+          headers: getHeaders()
+        });
+        const res = await resp.json();
+        if (resp.ok) {
+          showToast(`Quét hoàn tất: +${res.added || 0} mới, cập nhật ${res.updated || 0}, tổng ${res.total || 0} tài khoản.`, 'success');
+          fetchStatus();
+        } else {
+          showToast(`Lỗi quét: ${res.error || res.message || 'Không có quyền truy cập'}`, 'error');
+        }
+      } catch (err) {
+        showToast(`Lỗi: ${err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i><span>Quét Lại Thư Mục Cookie</span>`;
+      }
+    }
+
+    // Test Ping AI (Quick Ping)
+    async function triggerTestPing() {
+      const btn = document.getElementById('btnPing');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Đang Ping...</span>`;
+      
+      try {
+        const resp = await fetch('/admin/test', {
+          method: 'POST',
+          headers: getHeaders()
+        });
+        const res = await resp.json();
+        if (resp.ok && res.success) {
+          showToast(`⚡ Ping thành công [${res.account}] trong ${res.latency_ms}ms: "${res.reply}"`, 'success', 5000);
+          fetchStatus();
+        } else {
+          showToast(`❌ Ping thất bại: ${res.error || 'Server không phản hồi'}`, 'error', 5000);
+        }
+      } catch (err) {
+        showToast(`Lỗi: ${err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-bolt"></i><span>Kiểm Tra Ping AI</span>`;
+      }
+    }
+
+    // Test Specific Account
+    async function testSpecificAccount(accountName) {
+      showToast(`Đang gửi Ping kiểm tra [${accountName}]...`, 'info', 2000);
+      try {
+        const resp = await fetch(`/admin/test/${encodeURIComponent(accountName)}`, {
+          method: 'POST',
+          headers: getHeaders()
+        });
+        const res = await resp.json();
+        if (resp.ok && res.success) {
+          showToast(`✅ [${accountName}] hoạt động tốt (${res.latency_ms}ms): "${res.reply}"`, 'success', 5000);
+          fetchStatus();
+        } else {
+          showToast(`🔴 [${accountName}] lỗi (${res.latency_ms || '--'}ms): ${res.error || 'Thất bại'}`, 'error', 6000);
+        }
+      } catch (err) {
+        showToast(`Lỗi kết nối: ${err.message}`, 'error');
+      }
+    }
+
+    // Delete Account
+    async function deleteAccount(accountName) {
+      if (!confirm(`Bạn có chắc chắn muốn xoá tài khoản "${accountName}" khỏi pool và xoá file cookie không?`)) {
+        return;
+      }
+
+      try {
+        const resp = await fetch(`/admin/accounts/${encodeURIComponent(accountName)}`, {
+          method: 'DELETE',
+          headers: getHeaders()
+        });
+        const res = await resp.json();
+        if (resp.ok) {
+          showToast(`Đã xoá tài khoản "${accountName}" thành công!`, 'success');
+          fetchStatus();
+        } else {
+          showToast(`Lỗi khi xoá: ${res.error || res.message}`, 'error');
+        }
+      } catch (err) {
+        showToast(`Lỗi: ${err.message}`, 'error');
+      }
+    }
+
+    // Modal: Add / Rotate Account
+    function openAddAccountModal() {
+      document.getElementById('modalTitle').innerText = 'Thêm / Cập Nhật Tài Khoản Cookie';
+      document.getElementById('inputAccName').value = 'acc' + (cachedAccounts.length + 1);
+      document.getElementById('inputCookies').value = '';
+      document.getElementById('inputAuthUser').value = '0';
+      document.getElementById('inputReplace').checked = true;
+      document.getElementById('cookieFileName').innerText = 'Chưa chọn file nào';
+      document.getElementById('addAccountModal').classList.remove('hidden');
+    }
+
+    function openRotateAccount(accountName) {
+      document.getElementById('modalTitle').innerText = `Cập Nhật Cookie Cho: ${accountName}`;
+      document.getElementById('inputAccName').value = accountName;
+      document.getElementById('inputCookies').value = '';
+      document.getElementById('inputAuthUser').value = '0';
+      document.getElementById('inputReplace').checked = true;
+      document.getElementById('cookieFileName').innerText = 'Chưa chọn file nào';
+      document.getElementById('addAccountModal').classList.remove('hidden');
+    }
+
+    function closeAddAccountModal() {
+      document.getElementById('addAccountModal').classList.add('hidden');
+    }
+
+    // Submit Add/Rotate Account Form
+    async function submitAccountForm() {
+      const name = document.getElementById('inputAccName').value.trim();
+      const cookies = document.getElementById('inputCookies').value.trim();
+      const authUser = document.getElementById('inputAuthUser').value.trim() || '0';
+      const replace = document.getElementById('inputReplace').checked;
+
+      if (!cookies) {
+        showToast('Vui lòng dán chuỗi cookie của tài khoản!', 'warn');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitAccount');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Đang khởi tạo...</span>`;
+
+      try {
+        const resp = await fetch('/admin/accounts', {
+          method: 'POST',
+          headers: getHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({
+            name: name,
+            cookies: cookies,
+            auth_user: authUser,
+            replace: replace
+          })
+        });
+
+        const res = await resp.json();
+        if (resp.ok) {
+          showToast(`Tài khoản "${name}" đã được nạp thành công!`, 'success');
+          closeAddAccountModal();
+          fetchStatus();
+        } else {
+          showToast(`Lỗi khởi tạo: ${res.error || res.message || 'Kiểm tra lại tính hợp lệ của cookie'}`, 'error', 6000);
+        }
+      } catch (err) {
+        showToast(`Lỗi gửi yêu cầu: ${err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i><span>Lưu & Khởi Tạo Tài Khoản</span>`;
+      }
+    }
+
+    // File Upload Handler for Cookie Modal
+    function handleCookieFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      document.getElementById('cookieFileName').innerText = file.name;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = e.target.result;
+        try {
+          // If JSON
+          if (file.name.endsWith('.json')) {
+            const data = JSON.parse(content);
+            if (Array.isArray(data) && data.length > 0) {
+              document.getElementById('inputCookies').value = data[0].cookies || '';
+              if (data[0].name) document.getElementById('inputAccName').value = data[0].name;
+            } else if (data.cookies) {
+              document.getElementById('inputCookies').value = data.cookies;
+              if (data.name) document.getElementById('inputAccName').value = data.name;
+            }
+          } else {
+            // Text file
+            document.getElementById('inputCookies').value = content.trim();
+            // Try to infer name from filename
+            const cleanName = file.name.replace(/\.[^/.]+$/, "");
+            if (cleanName && cleanName !== 'cookie' && cleanName !== 'cookies') {
+              document.getElementById('inputAccName').value = cleanName;
+            }
+          }
+          showToast(`Đã đọc nội dung từ file "${file.name}"`, 'info', 2000);
+        } catch (err) {
+          showToast(`Không đọc được file: ${err.message}`, 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Clipboard Paste Helper
+    async function pasteFromClipboard(elemId) {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          document.getElementById(elemId).value = text;
+          showToast('Đã dán từ bộ nhớ tạm!', 'info', 1500);
+        }
+      } catch (e) {
+        showToast('Vui lòng cấp quyền truy cập clipboard hoặc dán thủ công bằng Ctrl+V.', 'warn');
+      }
+    }
+
+    // Copy to clipboard
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Đã sao chép vào bộ nhớ tạm!', 'success', 2000);
+      }).catch(err => {
+        showToast('Không sao chép được: ' + err.message, 'error');
+      });
+    }
+
+    // AI Playground Prompt Sender
+    async function sendPlaygroundPrompt() {
+      const prompt = document.getElementById('playgroundPrompt').value.trim();
+      const model = document.getElementById('playgroundModel').value;
+      if (!prompt) {
+        showToast('Vui lòng nhập prompt để thử nghiệm!', 'warn');
+        return;
+      }
+
+      const btn = document.getElementById('btnSendPrompt');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Đang xử lý...</span>`;
+
+      const resultArea = document.getElementById('playgroundResultArea');
+      const responseText = document.getElementById('playgroundResponseText');
+      const latencyBadge = document.getElementById('playgroundLatencyBadge');
+      const modelBadge = document.getElementById('playgroundModelBadge');
+
+      resultArea.classList.remove('hidden');
+      responseText.innerText = 'Đang gửi yêu cầu tới Gemini và chờ phản hồi...';
+      latencyBadge.innerText = 'Đang xử lý...';
+      modelBadge.innerText = model;
+
+      const start = performance.now();
+      try {
+        const resp = await fetch('/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: getHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({
+            model: model,
+            messages: [{ role: 'user', content: prompt }],
+            stream: false
+          })
+        });
+
+        const latency = Math.round(performance.now() - start);
+        latencyBadge.innerText = `${latency} ms`;
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData.error?.message || errData.message || `HTTP ${resp.status}`);
+        }
+
+        const data = await resp.json();
+        const content = data.choices?.[0]?.message?.content || 'Không có nội dung trả về';
+        responseText.innerText = content;
+        showToast(`AI phản hồi trong ${latency}ms!`, 'success');
+      } catch (err) {
+        responseText.innerText = `LỖI: ${err.message}`;
+        latencyBadge.innerText = 'LỖI';
+        latencyBadge.className = 'px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono text-[11px]';
+        showToast(`Lỗi: ${err.message}`, 'error', 5000);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i><span>Gửi Prompt</span>`;
+      }
+    }
+
+    function setPrompt(txt) {
+      document.getElementById('playgroundPrompt').value = txt;
+      document.getElementById('playgroundPrompt').focus();
+    }
+
+    // Admin Token Modal
+    function openTokenModal() {
+      document.getElementById('inputAdminToken').value = localStorage.getItem('gemini_admin_token') || '';
+      document.getElementById('tokenModal').classList.remove('hidden');
+    }
+    function closeTokenModal() {
+      document.getElementById('tokenModal').classList.add('hidden');
+    }
+    function saveAdminToken() {
+      const val = document.getElementById('inputAdminToken').value.trim();
+      if (val) {
+        localStorage.setItem('gemini_admin_token', val);
+        document.getElementById('tokenBtnLabel').innerText = 'Token (Đã lưu)';
+        showToast('Đã lưu Admin Token vào trình duyệt!', 'success');
+      } else {
+        localStorage.removeItem('gemini_admin_token');
+        document.getElementById('tokenBtnLabel').innerText = 'Token';
+        showToast('Đã xóa Admin Token!', 'info');
+      }
+      closeTokenModal();
+      fetchStatus(true);
+    }
+    function clearAdminToken() {
+      localStorage.removeItem('gemini_admin_token');
+      document.getElementById('inputAdminToken').value = '';
+      document.getElementById('tokenBtnLabel').innerText = 'Token';
+      showToast('Đã xóa Admin Token khỏi trình duyệt', 'info');
+      closeTokenModal();
+      fetchStatus(true);
+    }
+
+    // Auto Refresh Setting
+    document.getElementById('autoRefreshSelect').addEventListener('change', function(e) {
+      clearInterval(refreshTimer);
+      const interval = parseInt(e.target.value);
+      if (interval > 0) {
+        refreshTimer = setInterval(() => fetchStatus(false), interval);
+        showToast(`Tự động làm mới mỗi ${interval/1000}s`, 'info', 1500);
+      } else {
+        showToast('Đã tắt tự động làm mới', 'info', 1500);
+      }
+    });
+
+    // Keyboard shortcut for prompt
+    document.getElementById('playgroundPrompt').addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        sendPlaygroundPrompt();
+      }
+    });
+
+    // Escape helper
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, function(m) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[m];
+      });
+    }
+
+    // Fetch dynamically available models from pool
+    async function fetchModels() {
+      try {
+        const resp = await fetch('/openai/v1/models', { headers: getHeaders() });
+        if (resp.ok) {
+          const res = await resp.json();
+          const select = document.getElementById('playgroundModel');
+          if (res.data && res.data.length > 0) {
+            select.innerHTML = res.data.map(m => `<option value="${escapeHtml(m.id)}">${escapeHtml(m.id)} (${escapeHtml(m.display_name || m.id)})</option>`).join('');
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load dynamic models:', e);
+      }
+    }
+
+    // Startup
+    window.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('gemini_admin_token')) {
+        document.getElementById('tokenBtnLabel').innerText = 'Token (Đã lưu)';
+      }
+      fetchStatus();
+      fetchModels();
+      refreshTimer = setInterval(() => fetchStatus(false), 10000);
+    });
+  </script>
+</body>
+</html>
